@@ -2203,7 +2203,7 @@ DEFINE_HOOK(0x489416, MapClass_DamageArea_AirDamageSelfFix, 0x6)
 
 	GET_BASE(WarheadTypeClass*, pWarhead, 0xC);
 
-	if (WarheadTypeExt::Fetch(pWarhead)->AllowDamageOnSelf)
+	if (WarheadTypeExt::Fetch(pWarhead)->AllowDamageOnSelf.Get(RulesExt::Global()->AllowDamageOnSelf))
 		return 0;
 
 	return NextTechno;
@@ -2402,7 +2402,7 @@ DEFINE_HOOK(0x415F25, AircraftClass_FireAt_Vertical, 0x6)
 
 	GET(BulletClass*, pBullet, ESI);
 
-	if (pBullet->HasParachute || (pBullet->Type->Vertical && BulletTypeExt::Fetch(pBullet->Type)->Vertical_AircraftFix))
+	if (pBullet->HasParachute || (pBullet->Type->Vertical && BulletTypeExt::Fetch(pBullet->Type)->Vertical_AircraftFix.Get(RulesExt::Global()->Vertical_AircraftFix)))
 		return SkipGameCode;
 
 	return 0;
@@ -2973,7 +2973,8 @@ DEFINE_HOOK(0x54CC16, JumpjetLocomotionClass_CrashDescent_OffMap, 0x8)
 
 // RocketLocomotionClass::Process - health check after position update.
 // If off-map, bypass the Health > 0 skip and force detonation/cleanup.
-DEFINE_HOOK(0x662FD5, RocketLocomotionClass_Process_OffMap, 0x6)
+// Disable it since it prevents the regular OOB missile cruise.
+/*DEFINE_HOOK(0x662FD5, RocketLocomotionClass_Process_OffMap, 0x6)
 {
 	enum { ForceCleanup = 0x662FDF };
 
@@ -2983,7 +2984,7 @@ DEFINE_HOOK(0x662FD5, RocketLocomotionClass_Process_OffMap, 0x6)
 		return ForceCleanup;
 
 	return 0;
-}
+}*/
 
 DEFINE_HOOK(0x4DEC7F, FootClass_Crash_FallingDownFix, 0x7)
 {

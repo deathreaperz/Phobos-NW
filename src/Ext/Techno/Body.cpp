@@ -30,7 +30,7 @@ TechnoExt::~TechnoExt()
 	}
 
 	if (whatAmI != AbstractType::AircraftType && whatAmI != AbstractType::BuildingType
-		&& pType->Ammo > 0 && pTypeExt->ReloadInTransport)
+		&& pType->Ammo > 0 && pTypeExt->ReloadInTransport.Get(RulesExt::Global()->ReloadInTransport))
 	{
 		auto& vec = ScenarioExt::Global()->TransportReloaders;
 		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
@@ -495,38 +495,50 @@ bool TechnoExt::HasAttachedEffects(std::vector<AttachEffectTypeClass*> attachEff
 
 	for (auto const& type : attachEffectTypes)
 	{
-		for (auto const& attachEffect : this->AttachedEffects)
+		if (type->Cumulative)
 		{
-			if (attachEffect->GetType() == type && attachEffect->IsActive())
+			const int cumulativeCount = this->GetAttachedEffectCumulativeCount(type, ignoreSameSource, pInvoker, pSource);
+			bool matched = cumulativeCount > 0;
+			const unsigned int minSize = minCounts ? minCounts->size() : 0;
+			const unsigned int maxSize = maxCounts ? maxCounts->size() : 0;
+
+			if (matched && minSize > 0)
 			{
-				if (checkSource && attachEffect->IsFromSource(pInvoker, pSource))
-					continue;
+				if (cumulativeCount < minCounts->at(typeCounter - 1 >= minSize ? minSize - 1 : typeCounter - 1))
+					matched = false;
+			}
 
-				const unsigned int minSize = minCounts ? minCounts->size() : 0;
-				const unsigned int maxSize = maxCounts ? maxCounts->size() : 0;
+			if (matched && maxSize > 0)
+			{
+				if (cumulativeCount > maxCounts->at(typeCounter - 1 >= maxSize ? maxSize - 1 : typeCounter - 1))
+					matched = false;
+			}
 
-				if (type->Cumulative && (minSize > 0 || maxSize > 0))
-				{
-					const int cumulativeCount = this->GetAttachedEffectCumulativeCount(type, ignoreSameSource, pInvoker, pSource);
-
-					if (minSize > 0)
-					{
-						if (cumulativeCount < minCounts->at(typeCounter - 1 >= minSize ? minSize - 1 : typeCounter - 1))
-							continue;
-					}
-					if (maxSize > 0)
-					{
-						if (cumulativeCount > maxCounts->at(typeCounter - 1 >= maxSize ? maxSize - 1 : typeCounter - 1))
-							continue;
-					}
-				}
-
+			if (matched)
+			{
 				// Only need to find one match, can stop here.
 				if (!requireAll)
 					return true;
 
 				foundCount++;
-				break;
+			}
+		}
+		else
+		{
+			for (auto const& attachEffect : this->AttachedEffects)
+			{
+				if (attachEffect->GetType() == type && attachEffect->IsActive())
+				{
+					if (checkSource && attachEffect->IsFromSource(pInvoker, pSource))
+						continue;
+
+					// Only need to find one match, can stop here.
+					if (!requireAll)
+						return true;
+
+					foundCount++;
+					break;
+				}
 			}
 		}
 
@@ -553,9 +565,6 @@ bool TechnoExt::HasAttachedEffects(std::vector<AttachEffectTypeClass*> attachEff
 /// <returns>Number of active cumulative AttachEffect type instances on the techno. 0 if the AttachEffect type is not cumulative.</returns>
 int TechnoExt::GetAttachedEffectCumulativeCount(AttachEffectTypeClass* pAttachEffectType, bool ignoreSameSource, TechnoClass* pInvoker, AbstractClass* pSource) const
 {
-	if (!pAttachEffectType->Cumulative)
-		return 0;
-
 	unsigned int foundCount = 0;
 	const bool checkSource = ignoreSameSource && pInvoker && pSource;
 
@@ -897,7 +906,7 @@ bool __fastcall TechnoExt::ApplyKillDriver(TechnoClass** pData, void*, HouseClas
 
 		const auto pTypeExt = TechnoTypeExt::Fetch(pType);
 
-		if (passive && pTypeExt->DriverKilled_KeptPassengers)
+		if (passive && pTypeExt->DriverKilled_KeptPassengers.Get(RulesExt::Global()->DriverKilled_KeptPassengers))
 			break;
 
 		const bool kill = pTypeExt->DriverKilled_KillPassengers.Get(RulesExt::Global()->DriverKilled_KillPassengers);

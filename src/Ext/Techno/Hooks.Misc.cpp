@@ -5,10 +5,9 @@
 #include <JumpjetLocomotionClass.h>
 
 #include <Ext/Anim/Body.h>
+#include <Ext/BuildingType/Body.h>
 #include <Ext/Infantry/Body.h>
-#include <Ext/InfantryType/Body.h>
 #include <Ext/Unit/Body.h>
-#include <Ext/UnitType/Body.h>
 
 #pragma region SlaveManagerClass
 
@@ -129,7 +128,7 @@ DEFINE_HOOK(0x6B7600, SpawnManagerClass_AI_InitDestination, 0x6)
 	auto const pOwner = pThis->Owner;
 	auto const pTypeExt = TechnoExt::Fetch(pOwner)->TypeExtData;
 
-	if (pTypeExt->Spawner_AttackImmediately)
+	if (pTypeExt->Spawner_AttackImmediately.Get(RulesExt::Global()->Spawner_AttackImmediately))
 	{
 		pSpawnee->SetTarget(pThis->Target);
 		pSpawnee->QueueMission(Mission::Attack, true);
@@ -206,7 +205,7 @@ DEFINE_HOOK(0x6B7282, SpawnManagerClass_AI_PromoteSpawns, 0x5)
 
 	auto const pTypeExt = TechnoExt::Fetch(pThis->Owner)->TypeExtData;
 
-	if (pTypeExt->Promote_IncludeSpawns)
+	if (pTypeExt->Promote_IncludeSpawns.Get(RulesExt::Global()->Promote_IncludeSpawns))
 	{
 		for (auto const pNode : pThis->SpawnedNodes)
 		{
@@ -240,10 +239,10 @@ DEFINE_HOOK(0x6B77B4, SpawnManagerClass_Update_RecycleSpawned, 0x7)
 	{
 		auto const& FLH = pCarrierTypeExt->Spawner_RecycleCoord;
 		auto const recycleCrd = FLH != CoordStruct::Empty
-			? TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret)
+			? TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret.Get(RulesExt::Global()->Spawner_RecycleOnTurret))
 			: pCarrier->GetCoords();
 		auto const deltaCrd = spawnerCrd - recycleCrd;
-		const int recycleRange = pCarrierTypeExt->Spawner_RecycleRange.Get();
+		const int recycleRange = pCarrierTypeExt->Spawner_RecycleRange.Get(RulesExt::Global()->Spawner_RecycleRange);
 
 		if (recycleRange < 0)
 		{
@@ -283,7 +282,7 @@ DEFINE_HOOK(0x4D962B, FootClass_SetDestination_RecycleFLH, 0x5)
 		if (FLH != CoordStruct::Empty)
 		{
 			GET(CoordStruct*, pDestCrd, EAX);
-			*pDestCrd += TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret) - pCarrier->GetCoords();
+			*pDestCrd += TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret.Get(RulesExt::Global()->Spawner_RecycleOnTurret)) - pCarrier->GetCoords();
 		}
 	}
 	else if (!pThis->GetTechnoType()->MissileSpawn && pDest->WhatAmI() == AbstractType::Building
@@ -305,7 +304,7 @@ DEFINE_HOOK(0x6B74F0, SpawnManagerClass_AI_UseTurretFacing, 0x5)
 
 	auto const pTechno = pThis->Owner;
 
-	if (pTechno->HasTurret() && TechnoExt::Fetch(pTechno)->TypeExtData->Spawner_UseTurretFacing)
+	if (pTechno->HasTurret() && TechnoExt::Fetch(pTechno)->TypeExtData->Spawner_UseTurretFacing.Get(RulesExt::Global()->Spawner_UseTurretFacing))
 		R->EAX(pTechno->SecondaryFacing.Current().Raw);
 
 	return 0;
@@ -787,6 +786,35 @@ DEFINE_HOOK(0x5F46AE, ObjectClass_Select, 0x7)
 
 	pThis->IsSelected = true;
 
+	if (RulesExt::Global()->SetTabBySelectingFactory && pThis->WhatAmI() == AbstractType::Building && pThis->GetOwningHouse()->IsCurrentPlayer())
+	{
+		auto const pBldTypeExt = BuildingTypeExt::Fetch(specific_cast<BuildingClass*>(pThis)->Type);
+		const int tabIndex = pBldTypeExt->SetTabBySelecting;
+
+		if (tabIndex >= 0 && tabIndex < 4)
+		{
+			TabClass::Instance.SetTab(tabIndex);
+		}
+		else if (tabIndex < 0)
+		{
+			switch (specific_cast<BuildingClass*>(pThis)->Type->Factory)
+			{
+			case AbstractType::InfantryType:
+				TabClass::Instance.SetTab(2);
+				break;
+			case AbstractType::UnitType:
+			case AbstractType::AircraftType:
+				TabClass::Instance.SetTab(3);
+				break;
+			case AbstractType::BuildingType:
+				TabClass::Instance.SetTab(SidebarClass::Instance.ActiveTabIndex == 0 ? 1 : 0); // A controversial design, but no one has yet proposed a better one.
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
 	if (!Phobos::Config::ShowFlashOnSelecting)
 		return 0;
 
@@ -845,7 +873,7 @@ DEFINE_HOOK(0x51D7E0, InfantryClass_DoAction_Water, 0x5)
 	R->EBP(0); // Restore overridden instructions.
 
 	const auto pTypeExt = InfantryTypeExt::Fetch(pThis->Type);
-	if (pTypeExt->OnlyUseLandSequences)
+	if (pTypeExt->OnlyUseLandSequences.Get(RulesExt::Global()->OnlyUseLandSequences))
 		return SkipWaterSequences;
 
 	if (sequence == Sequence::Walk || sequence == Sequence::Crawl) // Restore overridden instructions.

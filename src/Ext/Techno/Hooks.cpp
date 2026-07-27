@@ -266,16 +266,30 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 {
 	GET(TechnoClass*, pThis, ESI);
 
+	if (!pThis->GetTechnoType()) // Critical sanity check in s/l
+		return 0;
+
+	// No extension while a savegame is loading: either it comes from the extension
+	// stream, or the object is one the game is creating as part of the load and its
+	// extension - and this initialization with it - follows once the load settles.
+	if (auto const pExt = TechnoExt::TryFetch(pThis))
+		pExt->InitializeState();
+
+	return 0;
+}
+
+// The state a techno's extension gets when the techno itself is initialized. Also run
+// for extensions allocated after the fact, for technos the game created while a
+// savegame was loading.
+void TechnoExt::InitializeState()
+{
+	auto const pThis = this->OwnerObject();
 	auto const pType = pThis->GetTechnoType();
 
-	if (!pType) // Critical sanity check in s/l
-		return 0;
+	if (!pType)
+		return;
 
-	auto const pExt = TechnoExt::TryFetch(pThis);
-
-	if (!pExt) // constructed during savegame load; state comes from the stream instead
-		return 0;
-
+	auto const pExt = this;
 	auto const pTypeExt = TechnoTypeExt::Fetch(pType);
 	pExt->TypeExtData = pTypeExt;
 
@@ -306,8 +320,6 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 
 	if (pThis->AbstractFlags & AbstractFlags::Foot)
 		pThis->Owner->RecheckTechTree = true; // for SW.AuxTechons and SW.NegTechnos
-
-	return 0;
 }
 
 DEFINE_HOOK(0x6F421C, TechnoClass_Init_DefaultDisguise, 0x6)
@@ -728,7 +740,7 @@ DEFINE_HOOK(0x70EFE0, TechnoClass_GetMaxSpeed, 0x0)
 	auto const pThisType = pTypeExt->OwnerObject();
 	int maxSpeed = pThisType->Speed;
 
-	if (pTypeExt->UseDisguiseMovementSpeed && pThis->IsDisguised())
+	if (pTypeExt->UseDisguiseMovementSpeed.Get(RulesExt::Global()->UseDisguiseMovementSpeed) && pThis->IsDisguised())
 	{
 		if (auto const pType = TechnoTypeExt::GetTechnoType(pThis->Disguise))
 			maxSpeed = pType->Speed;
@@ -843,7 +855,7 @@ DEFINE_HOOK(0x62A0D3, ParasiteClass_AI_ParticleSystem, 0x5)
 	GET_STACK(WarheadTypeClass*, pWarhead, STACK_OFFSET(0x4C, -0x2C));
 	const auto pWHExt = WarheadTypeExt::Fetch(pWarhead);
 
-	if (pWHExt->Parasite_DisableParticleSystem)
+	if (pWHExt->Parasite_DisableParticleSystem.Get(RulesExt::Global()->Parasite_DisableParticleSystem))
 		return SkipGameCode;
 
 	if (const auto pParticleSysType = pWHExt->Parasite_ParticleSystem.Get(RulesClass::Instance->DefaultSparkSystem))
@@ -944,7 +956,7 @@ DEFINE_HOOK(0x5F4021, ObjectClass_Update_FallingDown_ToDead, 0x6)
 
 			if (hoverShutdown)
 			{
-				if (static_cast<UnitExt*>(pExt)->GetTypeExtData()->HoverDrownable)
+				if (static_cast<UnitExt*>(pExt)->GetTypeExtData()->HoverDrownable.Get(RulesExt::Global()->HoverDrownable))
 				{
 					int damage = pThis->Health;
 					pTechno->ReceiveDamage(&damage, 0, RulesClass::Instance->C4Warhead, nullptr, true, false, nullptr);
@@ -975,7 +987,7 @@ DEFINE_HOOK(0x5F4021, ObjectClass_Update_FallingDown_ToDead, 0x6)
 			{
 				const auto pTypeExt = TechnoTypeExt::Fetch(pType);
 
-				if (!pTypeExt->FallingDownDamage_AllowEMP && pTechno->EMPLockRemaining > 0)
+				if (!pTypeExt->FallingDownDamage_AllowEMP.Get(RulesExt::Global()->FallingDownDamage_AllowEMP) && pTechno->EMPLockRemaining > 0)
 				{
 					damage = pThis->Health;
 					pTechno->ReceiveDamage(&damage, 0, RulesClass::Instance->C4Warhead, nullptr, true, false, nullptr);
@@ -986,9 +998,9 @@ DEFINE_HOOK(0x5F4021, ObjectClass_Update_FallingDown_ToDead, 0x6)
 				double ratio = 0.0;
 
 				if (inWater)
-					ratio = pTypeExt->FallingDownDamage_Water.Get(pTypeExt->FallingDownDamage.Get());
+					ratio = pTypeExt->FallingDownDamage_Water.Get(pTypeExt->FallingDownDamage.Get(RulesExt::Global()->FallingDownDamage));
 				else
-					ratio = pTypeExt->FallingDownDamage.Get();
+					ratio = pTypeExt->FallingDownDamage.Get(RulesExt::Global()->FallingDownDamage);
 
 				if (ratio < 0.0)
 					damage = static_cast<int>(pThis->Health * std::abs(ratio));
