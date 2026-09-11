@@ -4,7 +4,6 @@
 #include <Ext/Anim/Body.h>
 #include <Ext/House/Body.h>
 #include <Ext/SWType/Body.h>
-#include <Ext/TechnoType/Body.h>
 #include <Ext/WarheadType/Body.h>
 
 #pragma region Update
@@ -398,6 +397,9 @@ DEFINE_HOOK(0x441553, BuildingClass_Unlimbo_AddOwned, 0x6)
 	if (!pTypeExt->PowerPlantEnhancer_Buildings.empty() && (pTypeExt->PowerPlantEnhancer_Amount != 0 || pTypeExt->PowerPlantEnhancer_Factor != 1.0f))
 		pOwnerExt->PowerPlantEnhancers.push_back(pThis);
 
+	if (pTypeExt->SpeedBonus.Enabled)
+		pOwnerExt->BuildSpeedBonusBuildings.push_back(pThis);
+
 	return 0;
 }
 
@@ -414,6 +416,12 @@ DEFINE_HOOK(0x448A78, BuildingClass_SetOwningHouse_RemoveOwned, 0x6)
 		vec.erase(std::remove(vec.begin(), vec.end(), pThis), vec.end());
 	}
 
+	if (pTypeExt->SpeedBonus.Enabled)
+	{
+		auto& vec = pOwnerExt->BuildSpeedBonusBuildings;
+		vec.erase(std::remove(vec.begin(), vec.end(), pThis), vec.end());
+	}
+
 	return 0;
 }
 
@@ -426,6 +434,9 @@ DEFINE_HOOK(0x449197, BuildingClass_SetOwningHouse_AddOwned, 0x6)
 
 	if (!pTypeExt->PowerPlantEnhancer_Buildings.empty() && (pTypeExt->PowerPlantEnhancer_Amount != 0 || pTypeExt->PowerPlantEnhancer_Factor != 1.0f))
 		pNewOwnerExt->PowerPlantEnhancers.push_back(pThis);
+
+	if (pTypeExt->SpeedBonus.Enabled)
+		pNewOwnerExt->BuildSpeedBonusBuildings.push_back(pThis);
 
 	return 0;
 }

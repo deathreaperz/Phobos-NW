@@ -197,6 +197,8 @@ void BuildingTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->Cloning_Powered.Read(exINI, pSection, "Cloning.Powered");
 	this->ExcludeFromMultipleFactoryBonus.Read(exINI, pSection, "ExcludeFromMultipleFactoryBonus");
 
+	this->SpeedBonus.Read(exINI, pSection);
+
 	this->Grinding_AllowAllies.Read(exINI, pSection, "Grinding.AllowAllies");
 	this->Grinding_AllowOwner.Read(exINI, pSection, "Grinding.AllowOwner");
 	this->Grinding_AllowTypes.Read(exINI, pSection, "Grinding.AllowTypes");
@@ -413,6 +415,7 @@ void BuildingTypeExt::Serialize(T& Stm)
 		.Process(this->InitialStrength_Cloning)
 		.Process(this->Cloning_Powered)
 		.Process(this->ExcludeFromMultipleFactoryBonus)
+		.Process(this->SpeedBonus)
 		.Process(this->Refinery_UseStorage)
 		.Process(this->Grinding_AllowAllies)
 		.Process(this->Grinding_AllowOwner)

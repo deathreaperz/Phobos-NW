@@ -53,6 +53,9 @@ public:
 	// FactoryPlants with Allow/DisallowTypes set.
 	std::vector<BuildingClass*> RestrictedFactoryPlants;
 
+	// Owned buildings with BuildSpeedBonus enabled.
+	std::vector<BuildingClass*> BuildSpeedBonusBuildings;
+
 	int LastBuiltNavalVehicleType;
 	int ProducingNavalUnitTypeIndex;
 
@@ -97,6 +100,7 @@ public:
 		, AISuperWeaponDelayTimer {}
 		, RepairBaseNodes { }
 		, RestrictedFactoryPlants {}
+		, BuildSpeedBonusBuildings {}
 		, LastBuiltNavalVehicleType { -1 }
 		, ProducingNavalUnitTypeIndex { -1 }
 		, CombatAlertTimer {}
