@@ -694,7 +694,6 @@ void HouseExt::Serialize(T& Stm)
 		.Process(this->AISuperWeaponDelayTimer)
 		.Process(this->RepairBaseNodes)
 		.Process(this->RestrictedFactoryPlants)
-		.Process(this->BuildSpeedBonusBuildings)
 		.Process(this->LastBuiltNavalVehicleType)
 		.Process(this->ProducingNavalUnitTypeIndex)
 		.Process(this->CombatAlertTimer)
@@ -766,12 +765,6 @@ void HouseExt::OnDetach(BuildingClass* pTarget, bool removed)
 		if (!this->RestrictedFactoryPlants.empty())
 		{
 			auto& vec = this->RestrictedFactoryPlants;
-			vec.erase(std::remove(vec.begin(), vec.end(), pTarget), vec.end());
-		}
-
-		if (!this->BuildSpeedBonusBuildings.empty())
-		{
-			auto& vec = this->BuildSpeedBonusBuildings;
 			vec.erase(std::remove(vec.begin(), vec.end(), pTarget), vec.end());
 		}
 	}

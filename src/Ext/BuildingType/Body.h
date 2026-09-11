@@ -3,7 +3,6 @@
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 #include <BuildingTypeClass.h>
-#include <New/Entity/BuildSpeedBonus.h>
 
 class BuildingTypeExt final : public TechnoTypeExt
 {
@@ -101,8 +100,6 @@ public:
 	NullableIdx<VocClass> BunkerWallsUpSound;
 	NullableIdx<VocClass> BunkerWallsDownSound;
 	Nullable<int> BunkerStateUpdateDelay;
-
-	BuildSpeedBonus SpeedBonus;
 
 	NullableIdx<VocClass> BuildingRepairedSound;
 
@@ -227,7 +224,6 @@ public:
 		, BunkerWallsDownSound {}
 		, BunkerStateUpdateDelay {}
 		, BuildingRepairedSound {}
-		, SpeedBonus {}
 		, Refinery_UseNormalActiveAnim { false }
 		, HasPowerUpAnim {}
 		, UndeploysInto_Sellable { false }
@@ -325,9 +321,5 @@ public:
 	static bool CanUpgrade(BuildingClass* pBuilding, BuildingTypeClass* pUpgradeType, HouseClass* pUpgradeOwner);
 	static int CountOwnedNowWithDeployOrUpgrade(BuildingTypeClass* pBuilding, HouseClass* pHouse);
 	static int GetUpgradesAmount(BuildingTypeClass* pBuilding, HouseClass* pHouse);
-
-	static double GetExternalFactorySpeedBonus(TechnoClass* pWhat, HouseClass* pOwner);
-	static double GetExternalFactorySpeedBonus(TechnoTypeClass* pWhat, HouseClass* pOwner);
-	static double GetExternalFactorySpeedBonus(TechnoClass* pWhat);
 };
 
