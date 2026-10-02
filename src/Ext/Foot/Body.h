@@ -13,6 +13,8 @@ public:
 	double LastWarpDistance;
 	int JumpjetSpeed;
 	bool IsInTunnel;
+	bool IsBurrowed;
+	bool UndergroundTracked;
 	HouseClass* OriginalPassengerOwner;
 	bool HasRemainingWarpInDelay;          // Converted from object with Teleport Locomotor to one with a different Locomotor while still phasing in OR set if ChronoSphereDelay > 0.
 	int LastWarpInDelay;                   // Last-warp in delay for this unit, used by HasCarryoverWarpInDelay.
@@ -29,6 +31,8 @@ public:
 		, LastWarpDistance {}
 		, JumpjetSpeed { 14 } // 0x7115B8
 		, IsInTunnel { false }
+		, IsBurrowed { false }
+		, UndergroundTracked { false }
 		, OriginalPassengerOwner {}
 		, HasRemainingWarpInDelay { false }
 		, LastWarpInDelay { 0 }
@@ -57,12 +61,15 @@ public:
 	}
 
 	virtual bool IsInTunnelState() const override { return this->IsInTunnel; }
+	virtual bool IsBurrowedState() const override { return this->IsBurrowed; }
 
 	void UpdateTiberiumEater();
 	void UpdateWarpInDelay();
 	void UpdateOnTunnelEnter();
 	void UpdateOnTunnelExit();
 	void UpdateTypeData(TechnoTypeClass* pCurrentType);
+	void HealthAutoConvertActions();
+	void AmmoAutoConvertActions();
 
 	virtual void LoadFromStream(PhobosStreamReader& Stm) override;
 	virtual void SaveToStream(PhobosStreamWriter& Stm) override;

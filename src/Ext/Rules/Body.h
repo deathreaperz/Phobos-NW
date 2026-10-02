@@ -1,6 +1,5 @@
 #pragma once
 
-#include <RulesClass.h>
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 
@@ -223,6 +222,7 @@ public:
 
 		Valueable<bool> ShowDesignatorRange;
 		Valueable<bool> ShowPowerPlantEnhancerRange;
+		Valueable<bool> ShowGameTime;
 		Valueable<bool> IsVoiceCreatedGlobal;
 		Valueable<bool> SetTabBySelectingFactory;
 		Valueable<int> SelectionFlashDuration;
@@ -289,6 +289,10 @@ public:
 		Valueable<bool> NoRearm_Temporal;
 		Valueable<bool> NoReload_UnderEMP;
 		Valueable<bool> NoReload_Temporal;
+		Valueable<double> VeteranReload;
+		Nullable<double> VeteranEmptyReload;
+		Valueable<double> VeteranRange;
+		Valueable<double> VeteranCritChance;
 		Valueable<bool> NoTurret_TrackTarget;
 
 		Valueable<bool> GatherWhenMCVDeploy;
@@ -335,7 +339,6 @@ public:
 		Valueable<bool> AllowBerzerkOnAllies;
 
 		Valueable<bool> AttackMove_IgnoreWeaponCheck;
-		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 
 		NullableIdx<AnimTypeClass> Parasite_GrappleAnim;
 		Nullable<bool> Parasite_AllowWaterExit;
@@ -352,6 +355,8 @@ public:
 		Valueable<int> WarheadAnimZAdjust;
 
 		Valueable<bool> IvanBombAttachToCenter;
+		Valueable<AffectedHouse> IvanBomb_Visibility;
+		Valueable<bool> MissileSpawnAttackCell;
 
 		Valueable<bool> FallingDownTargetingFix;
 		Valueable<bool> AIAirTargetingFix;
@@ -365,6 +370,7 @@ public:
 		Valueable<bool> OpenTopped_CheckTransportDisableWeapons;
 		Valueable<bool> OpenTopped_DecloakToFire;
 		Valueable<bool> OpenTopped_FireWhileMoving;
+		Valueable<bool> OpenTopped_FireWhileMoving_BasedOnDestination;
 		Valueable<int> OpenTransport_RangeBonus;
 		Valueable<float> OpenTransport_DamageMultiplier;
 		Valueable<bool> OpenTransport_FireWhileMoving;
@@ -419,7 +425,7 @@ public:
 		Valueable<bool> FiringAnim_Update;
 
 		Valueable<bool> ExtendedPlayerRepair;
-		
+
 		Valueable<bool> AutoTarget_NoThreatBuildings;
 		Valueable<bool> AutoTargetAI_NoThreatBuildings;
 
@@ -433,7 +439,7 @@ public:
 		Valueable<int> MindControlRingOffset;
 
 		Valueable<bool> DisableOveroptimizationInTargeting;
-    
+
 		Valueable<bool> CylinderRangefinding;
 
 		Valueable<int> PenetratesTransport_Level;
@@ -453,6 +459,8 @@ public:
 		Valueable<bool> DriveLocomotorMakesWake;
 		Valueable<bool> HoverLocomotorMakesWake;
 		Valueable<bool> ShipLocomotorMakesWake;
+
+		Valueable<StackingMode> Psychedelic_StackingMode;
 
 		Valueable<bool> Shrapnel_AffectsGround;
 		Valueable<bool> Shrapnel_AffectsBuildings;
@@ -486,9 +494,12 @@ public:
 
 		Valueable<bool> Temporal_ApplyVersus;
 		Valueable<bool> Temporal_ApplyMultiplier;
+		Valueable<bool> Temporal_KillPoweredAnim;
 
+		Valueable<bool> DiscardOn_Sequences_Immediate;
 		Valueable<bool> DiscardOn_MoveBasedOnDestination;
 		Valueable<bool> DiscardOn_ConsiderHarvestingAsStationary;
+		Valueable<bool> AttachEffect_ReplaceLongerDuration;
 		Valueable<bool> RemoveMindControl_Silent;
 		Valueable<bool> MindControl_Permanent_ReplaceSilent;
 		Nullable<bool> FlyNoWobbles;
@@ -499,7 +510,7 @@ public:
 
 		Valueable<DynamicTeamDelayType> TeamDelays_DynamicType;
 		Valueable<Vector3D<int>> TeamDelays_Count[8];
-    
+
 		Valueable<Mission> BerzerkMission;
 
 		Valueable<int> BunkerStateUpdateDelay;
@@ -523,6 +534,38 @@ public:
 		Valueable<bool> AircraftDockingDir_DefaultToPoseDir;
 		Nullable<int> PoseDir_Production;
 		Nullable<int> PoseDir_Field;
+
+		Valueable<bool> ApproachTarget_StopWhenInRange;
+		Valueable<bool> ReadyToNextMission_MovingCheck;
+
+		Valueable<bool> NoAlphaImageOnBuildup;
+
+		Valueable<bool> Warhead_PreventScatter;
+
+		Valueable<bool> ProjectileRange_ApplyModifiers;
+
+		Valueable<bool> KeepAlive_Infantry;
+		Valueable<bool> KeepAlive_Units;
+		Valueable<bool> KeepAlive_Aircraft;
+		Valueable<bool> KeepAlive_Buildings;
+		Valueable<bool> KeepAlive_Defenses;
+		Valueable<bool> AutoTarget_InsignificantWhenMindControlled;
+
+		ValueableVector<AnimTypeClass*> CloakAnims;
+		ValueableVector<AnimTypeClass*> DecloakAnims;
+		Valueable<bool> Cloak_KickOutParasite;
+
+		// Global default per-sequence animation rates for infantry
+		std::vector<int> CustomSequenceRates;
+
+		// Global default per-sequence game-speed normalization flags for infantry
+		std::vector<int> CustomSequenceNormalized;
+
+		Valueable<bool> AttachEffects_AttachOnOwnerChange;
+
+		Valueable<AffectedHouse> RevealHouses;
+
+		Valueable<bool> MissileKeepTargetCoord;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -719,6 +762,7 @@ public:
 			, VisualScatter_Max { Leptons(32) }
 			, ShowDesignatorRange { true }
 			, ShowPowerPlantEnhancerRange { true }
+			, ShowGameTime { true }
 			, DropPodTrailer { }
 			, DropPodDefaultTrailer { }
 			, PodImage { }
@@ -764,6 +808,10 @@ public:
 			, NoRearm_Temporal { false }
 			, NoReload_UnderEMP { false }
 			, NoReload_Temporal { false }
+			, VeteranReload { 1.0 }
+			, VeteranEmptyReload {}
+			, VeteranRange { 1.0 }
+			, VeteranCritChance { 1.0 }
 			, NoTurret_TrackTarget { false }
 			, GatherWhenMCVDeploy { true }
 			, AIFireSale { true }
@@ -806,7 +854,6 @@ public:
 			, TintColorBerserk { 0 }
 
 			, AttackMove_IgnoreWeaponCheck { false }
-			, AttackMove_StopWhenTargetAcquired { }
 
 			, Parasite_GrappleAnim {}
 			, Parasite_AllowWaterExit {}
@@ -816,6 +863,8 @@ public:
 			, WarheadAnimZAdjust { -15 }
 
 			, IvanBombAttachToCenter { false }
+			, IvanBomb_Visibility { AffectedHouse::Owner }
+			, MissileSpawnAttackCell { true }
 
 			, FallingDownTargetingFix { false }
 			, AIAirTargetingFix { false }
@@ -829,6 +878,7 @@ public:
 			, OpenTopped_CheckTransportDisableWeapons { false }
 			, OpenTopped_DecloakToFire { false }
 			, OpenTopped_FireWhileMoving { true }
+			, OpenTopped_FireWhileMoving_BasedOnDestination{ false }
 			, OpenTransport_RangeBonus { 0 }
 			, OpenTransport_DamageMultiplier { 1.0f }
 			, OpenTransport_FireWhileMoving { true }
@@ -908,15 +958,17 @@ public:
 			, ExtraThreatCoefficient_InRangeDistance { 0.0 }
 			, ExtraThreatCoefficient_Facing { 0.0 }
 			, ExtraThreatCoefficient_DistanceToLastTarget { 0.0 }
-			
+
 			, BalloonHoverPathingFix { false }
-			
+
 			, WalkLocomotorMakesWake { false }
 			, DriveLocomotorMakesWake { true }
 			, HoverLocomotorMakesWake { true }
 			, ShipLocomotorMakesWake { true }
 			, FiringAnim_Update { false }
 			, ExtendedPlayerRepair { false }
+
+			, Psychedelic_StackingMode { StackingMode::Override }
 			, Shrapnel_AffectsGround { false }
 			, Shrapnel_AffectsBuildings { false }
 			, Shrapnel_UseWeaponTargeting { false }
@@ -942,8 +994,11 @@ public:
 			, Vertical_AircraftFix { true }
 			, Temporal_ApplyVersus { false }
 			, Temporal_ApplyMultiplier { false }
+			, Temporal_KillPoweredAnim { true }
+			, DiscardOn_Sequences_Immediate { true }
 			, DiscardOn_MoveBasedOnDestination { false }
 			, DiscardOn_ConsiderHarvestingAsStationary { true }
+			, AttachEffect_ReplaceLongerDuration { false }
 			, RemoveMindControl_Silent { false }
 			, MindControl_Permanent_ReplaceSilent { false }
 
@@ -959,7 +1014,7 @@ public:
 			, BerzerkMission { Mission::Hunt }
 
 			, BunkerStateUpdateDelay { 15 }
-				
+
 			, AllowChatBoxInSinglePlayer { false }
 
 			, NotHuman_RandomDeathSequence { false }
@@ -981,6 +1036,37 @@ public:
 			, AircraftDockingDir_DefaultToPoseDir{ true }
 			, PoseDir_Production {}
 			, PoseDir_Field{}
+
+			, ApproachTarget_StopWhenInRange { false }
+
+			, NoAlphaImageOnBuildup { false }
+
+			, ReadyToNextMission_MovingCheck { false }
+
+			, Warhead_PreventScatter { false }
+
+			, ProjectileRange_ApplyModifiers { true }
+
+			, KeepAlive_Infantry { false }
+			, KeepAlive_Units { false }
+			, KeepAlive_Aircraft { false }
+			, KeepAlive_Buildings { true }
+			, KeepAlive_Defenses { true }
+
+			, AutoTarget_InsignificantWhenMindControlled { true }
+
+			, CloakAnims {}
+			, DecloakAnims {}
+			, Cloak_KickOutParasite { false }
+
+			, CustomSequenceRates(42, -1)
+			, CustomSequenceNormalized(42, -1)
+
+			, AttachEffects_AttachOnOwnerChange { false }
+
+			, RevealHouses { AffectedHouse::Team }
+
+			, MissileKeepTargetCoord { false }
 		{ }
 
 		virtual ~ExtData() = default;
